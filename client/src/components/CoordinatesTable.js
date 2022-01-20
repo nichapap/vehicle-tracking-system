@@ -81,7 +81,13 @@ export default function Coordinates(props) {
       <TableContainer component={Paper}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <Grid container justifyContent='flex-end' sx={{ pt: 4 }}>
-            <Grid item xs={5} sx={{ pr: 2 }}>
+            <Grid
+              item
+              sx={{
+                mr: 2,
+                mb: (theme) => (theme.breakpoints.down('sm') ? 2 : 0),
+              }}
+            >
               <DesktopDatePicker
                 label='From date'
                 inputFormat='dd/MM/yyyy'
@@ -91,7 +97,7 @@ export default function Coordinates(props) {
                 maxDate={toDate}
               />
             </Grid>
-            <Grid item xs={5} sx={{ pr: 2 }}>
+            <Grid item sx={{ mr: 2 }}>
               <DesktopDatePicker
                 label='To date'
                 inputFormat='dd/MM/yyyy'
