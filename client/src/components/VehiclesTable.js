@@ -15,7 +15,7 @@ import {
 import TablePaginationActions from './common/TablePaginationActions';
 
 export default function Vehicles(props) {
-  const { setSelectedVehicle } = props;
+  const { list, setSelectedVehicle } = props;
   const vehiclesRef = useRef();
   const [vehicleId, setVehicleId] = useState(null);
 
@@ -26,33 +26,6 @@ export default function Vehicles(props) {
   const handleSelectVehicle = (id) => {
     setVehicleId(id);
   };
-
-  const list = [
-    {
-      id: 7,
-      vehicle_id: 667788,
-    },
-    {
-      id: 1,
-      vehicle_id: 1234567,
-    },
-    {
-      id: 9,
-      vehicle_id: 5678910,
-    },
-    {
-      id: 3,
-      vehicle_id: 9876543,
-    },
-    {
-      id: 4,
-      vehicle_id: 9898989,
-    },
-    {
-      id: 5,
-      vehicle_id: 1212312121,
-    },
-  ];
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);

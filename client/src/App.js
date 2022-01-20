@@ -1,9 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
   AppBar,
   Box,
   Button,
+  CircularProgress,
   Container,
   CssBaseline,
   Toolbar,
@@ -15,7 +16,21 @@ import CoordinatesTable from './components/CoordinatesTable';
 import VehiclesTable from './components/VehiclesTable';
 
 const App = () => {
+  const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetch('http://localhost:9000/vehicles')
+      .then((response) => response.json())
+      .then((data) => {
+        setVehicles(data);
+        setIsLoading(false);
+      })
+      .catch((err) => setError(true));
+  }, []);
 
   const handleSetSelectedVehicle = useCallback(
     (val) => {
@@ -48,6 +63,7 @@ const App = () => {
         }}
       >
         <Toolbar />
+        {error ? 'error' : ''}
         {selectedVehicle ? (
           <Button
             variant='text'
@@ -59,13 +75,24 @@ const App = () => {
           </Button>
         ) : null}
         <Container maxWidth='xl'>
-          {selectedVehicle ? (
+          {isLoading ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                mt: 5,
+              }}
+            >
+              <CircularProgress size={50} />
+            </Box>
+          ) : selectedVehicle ? (
             <CoordinatesTable
               selectedVehicle={selectedVehicle}
               setSelectedVehicle={handleSetSelectedVehicle}
             />
           ) : (
             <VehiclesTable
+              list={vehicles}
               selectedVehicle={selectedVehicle}
               setSelectedVehicle={handleSetSelectedVehicle}
             />

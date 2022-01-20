@@ -1,7 +1,12 @@
-import React from 'react';
-import 'date-fns';
+import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import CloseIcon from '@mui/icons-material/Close';
 import {
+  Alert,
+  Box,
+  Collapse,
   Grid,
+  IconButton,
   Paper,
   Table,
   TableBody,
@@ -19,38 +24,38 @@ import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import TablePaginationActions from './common/TablePaginationActions';
 
 export default function Coordinates(props) {
-  const list = [
-    {
-      id: 3,
-      vehicle_id: 5678910,
-      recorded_date: '2021-12-31T17:00:00.000Z',
-      latitude: 2.222345,
-      longitude: 10.45647,
-    },
-    {
-      id: 4,
-      vehicle_id: 5678910,
-      recorded_date: '2021-12-31T17:00:00.000Z',
-      latitude: 2.222345,
-      longitude: 10.45647,
-    },
-    {
-      id: 5,
-      vehicle_id: 5678910,
-      recorded_date: '2021-12-31T17:00:00.000Z',
-      latitude: 2.222345,
-      longitude: 10.45647,
-    },
-  ];
+  const { selectedVehicle } = props;
 
   const today = new Date();
-  const lastMonth = new Date().setMonth(today.getMonth() - 1);
+  const lastMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() - 1,
+    today.getDate()
+  );
 
-  const [fromDate, setFromDate] = React.useState(lastMonth);
-  const [toDate, setToDate] = React.useState(today);
+  const [fromDate, setFromDate] = useState(lastMonth);
+  const [toDate, setToDate] = useState(today);
 
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const [open, setOpen] = React.useState(true);
+
+  const [coordinates, setCoordinates] = useState([]);
+
+  useEffect(() => {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromDate: format(fromDate, 'yyyy-MM-dd'),
+        toDate: format(toDate, 'yyyy-MM-dd'),
+      }),
+    };
+    fetch(`http://localhost:9000/vehicle/${selectedVehicle}`, requestOptions)
+      .then((response) => response.json())
+      .then((data) => setCoordinates(data));
+  }, [selectedVehicle, fromDate, toDate]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -69,12 +74,14 @@ export default function Coordinates(props) {
     setToDate(newValue);
   };
 
+  // console.log(window.theme.breakpoints);
+
   return (
     <React.Fragment>
       <TableContainer component={Paper}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <Grid container justifyContent='flex-end' sx={{ pt: 4 }}>
-            <Grid item sx={{ pr: 2 }}>
+            <Grid item xs={5} sx={{ pr: 2 }}>
               <DesktopDatePicker
                 label='From date'
                 inputFormat='dd/MM/yyyy'
@@ -84,20 +91,52 @@ export default function Coordinates(props) {
                 maxDate={toDate}
               />
             </Grid>
-            <Grid item sx={{ pr: 2 }}>
+            <Grid item xs={5} sx={{ pr: 2 }}>
               <DesktopDatePicker
                 label='To date'
                 inputFormat='dd/MM/yyyy'
                 value={toDate}
                 onChange={handleToDate}
                 renderInput={(params) => <TextField {...params} />}
+                minDate={fromDate}
                 maxDate={today}
               />
             </Grid>
           </Grid>
         </LocalizationProvider>
 
-        <Table sx={{ flexGrow: 1 }}>
+        <Box sx={{ m: 2 }}>
+          {coordinates.length < 1 ? (
+            <Collapse in={open}>
+              <Alert
+                severity='warning'
+                action={
+                  <IconButton
+                    aria-label='close'
+                    color='inherit'
+                    size='small'
+                    onClick={() => {
+                      setOpen(false);
+                    }}
+                  >
+                    <CloseIcon fontSize='inherit' />
+                  </IconButton>
+                }
+              >
+                No data to display in this range of date
+              </Alert>
+            </Collapse>
+          ) : (
+            ''
+          )}
+        </Box>
+
+        <Table
+          sx={{
+            flexGrow: 1,
+            display: () => (coordinates.length < 1 ? 'none' : 'table'),
+          }}
+        >
           <TableHead>
             <TableRow>
               <TableCell>Latitude</TableCell>
@@ -107,8 +146,11 @@ export default function Coordinates(props) {
           </TableHead>
           <TableBody>
             {(rowsPerPage > 0
-              ? list.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              : list
+              ? coordinates.slice(
+                  page * rowsPerPage,
+                  page * rowsPerPage + rowsPerPage
+                )
+              : coordinates
             ).map((coordinate) => (
               <TableRow key={coordinate.id}>
                 <TableCell>{coordinate.latitude}</TableCell>
@@ -124,7 +166,7 @@ export default function Coordinates(props) {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
                 colSpan={3}
-                count={list.length}
+                count={coordinates.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 SelectProps={{
