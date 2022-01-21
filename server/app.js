@@ -5,7 +5,6 @@ export default function (database) {
   const app = express();
 
   app.use(cors());
-
   app.use(express.json());
 
   app.post('/register', async (req, res) => {
