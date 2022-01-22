@@ -1,13 +1,13 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Server for Vehicle Tracking System",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index"
   },
-  "author": "",
+  "author": "nichapap",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
